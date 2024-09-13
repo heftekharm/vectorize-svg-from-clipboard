@@ -7,12 +7,12 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.android</depends>
 
+
+
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.heftekharm.vectorizesvgfromclipboard.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
-
-        <notificationGroup id="Svg Importer" displayType="BALLOON" key="notification.group.name"/>
     </extensions>
 
     <applicationListeners>
