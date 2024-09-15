@@ -12,6 +12,9 @@ class ImportDialogWrapper: DialogWrapper(true) {
     }
 
     lateinit var dialog:ImportDialog
+    lateinit var name:String
+        private set
+
 
     override fun createCenterPanel(): JComponent? {
         dialog = ImportDialog()
@@ -19,6 +22,7 @@ class ImportDialogWrapper: DialogWrapper(true) {
     }
 
     override fun doOKAction() {
+        name = dialog.nameTextField.text
         super.doOKAction()
     }
 }

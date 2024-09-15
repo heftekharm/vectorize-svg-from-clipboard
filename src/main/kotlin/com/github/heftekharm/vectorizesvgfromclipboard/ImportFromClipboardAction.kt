@@ -11,7 +11,6 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.impl.file.PsiDirectoryImpl
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
-import java.io.BufferedOutputStream
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileOutputStream
@@ -41,10 +40,10 @@ class ImportFromClipboardAction:AnAction() {
         val result = dialog.showAndGet()
 
         if(result){
-            val tempFile = File.createTempFile("in_temp_svg" , System.currentTimeMillis().toString())
-            BufferedWriter(FileWriter(tempFile)).write(data)
-            val tempOutputFile = File.createTempFile("out_temp_svg" , System.currentTimeMillis().toString())
-            Svg2Vector.parseSvgToXml(tempFile.toPath() ,  FileOutputStream(tempOutputFile))
+            val tempInputFile = File.createTempFile("in_temp_svg" , System.currentTimeMillis().toString())
+            BufferedWriter(FileWriter(tempInputFile)).write(data)
+            val output = File(resPath , "/drawables/" + dialog.name + ".xml")
+            Svg2Vector.parseSvgToXml(tempInputFile.toPath() ,  FileOutputStream(output))
 
         }
 
