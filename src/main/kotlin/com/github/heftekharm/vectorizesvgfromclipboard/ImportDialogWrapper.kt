@@ -25,15 +25,17 @@ class ImportDialogWrapper: DialogWrapper(true) {
     override fun createCenterPanel(): JComponent? {
         val dialogPanel = JPanel(GridLayout(3, 2, 10, 10))
 
-
         // Name input
         val nameLabel = JLabel("Name:")
-        nameField = JTextField()
+        nameField = JTextField().apply {
+            text = "ic_"
+            caretPosition = text.length
+            requestFocus()
+        }
         dialogPanel.add(nameLabel)
         dialogPanel.add(nameField)
 
-
-        // Width input
+/*        // Width input
         val widthLabel = JLabel("Width:")
         val widthField = JTextField()
         dialogPanel.add(widthLabel)
@@ -44,14 +46,9 @@ class ImportDialogWrapper: DialogWrapper(true) {
         val heightLabel = JLabel("Height:")
         val heightField = JTextField()
         dialogPanel.add(heightLabel)
-        dialogPanel.add(heightField)
+        dialogPanel.add(heightField)*/
 
         return dialogPanel
-
-
-
-        //dialog = ImportDialog()
-        //return dialogPanel
     }
 
     override fun doOKAction() {
