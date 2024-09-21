@@ -24,10 +24,10 @@ class ImportFromClipboardAction:AnAction() {
         val project = anActionEvent.project ?: return
         val data = Toolkit.getDefaultToolkit()
             .systemClipboard.getData(DataFlavor.stringFlavor) as? String
-        data?.takeIf { it.startsWith("<svg") }
-        if(data==null){
+        val svgPattern = Regex("<svg.*?>.*?</svg>", RegexOption.DOT_MATCHES_ALL)
+        val matchedSvg = data?.let { svgPattern.find(it) } ?: run{
             NotificationGroupManager.getInstance()
-                .getNotificationGroup("Svg Importer")
+                .getNotificationGroup("com.hfm.importfromclipboard.notification")
                 .createNotification("There is no valid svg in the clipboard", NotificationType.INFORMATION)
                 .notify(project)
             return
@@ -35,16 +35,17 @@ class ImportFromClipboardAction:AnAction() {
 
 
         val resPath = File(virtualFileRes.path)
-
         val dialog = ImportDialogWrapper()
         val result = dialog.showAndGet()
 
         if(result){
-            val tempInputFile = File.createTempFile("in_temp_svg" , System.currentTimeMillis().toString())
-            BufferedWriter(FileWriter(tempInputFile)).write(data)
+            val tempInputFile = File.createTempFile("in_temp_svg" , System.currentTimeMillis().toString()).apply {
+                writeText(matchedSvg.value)
+            }
             val output = File(resPath , "/drawables/" + dialog.name + ".xml")
-            Svg2Vector.parseSvgToXml(tempInputFile.toPath() ,  FileOutputStream(output))
-
+            output.createNewFile()
+            val outputStream = FileOutputStream(output)
+            Svg2Vector.parseSvgToXml(tempInputFile.toPath() ,  outputStream)
         }
 
     }

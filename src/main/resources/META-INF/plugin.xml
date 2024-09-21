@@ -12,7 +12,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow factoryClass="com.github.heftekharm.vectorizesvgfromclipboard.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
 
-        <notificationGroup id="Svg Importer" displayType="BALLOON" key="notification.group.name"/>
+        <notificationGroup id="com.hfm.importfromclipboard.notification" displayType="BALLOON" key="notification_group"/>
     </extensions>
 
     <applicationListeners>
