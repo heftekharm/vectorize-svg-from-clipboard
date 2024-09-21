@@ -9,11 +9,10 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBPanel
 import com.intellij.ui.content.ContentFactory
 import com.github.heftekharm.vectorizesvgfromclipboard.MyBundle
-import com.github.heftekharm.vectorizesvgfromclipboard.services.MyProjectService
 import javax.swing.JButton
 
 
-class MyToolWindowFactory : ToolWindowFactory {
+/*class MyToolWindowFactory : ToolWindowFactory {
 
     init {
         thisLogger().warn("Don't forget to remove all non-needed sample code files with their corresponding registration entries in `plugin.xml`.")
@@ -42,4 +41,4 @@ class MyToolWindowFactory : ToolWindowFactory {
             })
         }
     }
-}
+}*/

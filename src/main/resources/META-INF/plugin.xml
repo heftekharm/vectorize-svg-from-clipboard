@@ -10,15 +10,10 @@
     <resource-bundle>messages.MyBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow factoryClass="com.github.heftekharm.vectorizesvgfromclipboard.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>
+        <!--<toolWindow factoryClass="com.github.heftekharm.vectorizesvgfromclipboard.toolWindow.MyToolWindowFactory" id="MyToolWindow"/>-->
 
         <notificationGroup id="com.hfm.importfromclipboard.notification" displayType="BALLOON" key="notification_group"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="com.github.heftekharm.vectorizesvgfromclipboard.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
-
     <actions>
         <action id="com.hfm.importfromclipboard" class="com.github.heftekharm.vectorizesvgfromclipboard.ImportFromClipboardAction" text="Import Svg From Clipboard"
                 description="Imports svg from clipboard converting to android vector">
