@@ -38,7 +38,7 @@ class ImportFromClipboardAction : AnAction() {
             return
         }
 
-        val tempInputFile = File.createTempFile("temp_svg_from_clipboard", ".svg").apply {
+        val tempInputFile = File.createTempFile("temp_svg_from_clipboard_file_", ".svg").apply {
             writeText(matchedSvg.value)
         }
 
@@ -70,7 +70,6 @@ class ImportFromClipboardAction : AnAction() {
         dialogBuilder.setProject(facet.getModule().getProject())
             .setMinimumSize(JBUI.size(700, 540))
             .setPreferredSize(JBUI.size(700, 540))
-            .setHelpUrl(URL("http://developer.android.com/tools/help/vector-asset-studio.html"))
         dialogBuilder.build().show()
 
     }

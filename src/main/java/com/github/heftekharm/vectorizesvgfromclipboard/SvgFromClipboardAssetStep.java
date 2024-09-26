@@ -73,22 +73,13 @@ import java.util.Locale;
 import static com.android.tools.idea.npw.assetstudio.AssetStudioUtils.roundToInt;
 import static com.android.tools.idea.npw.project.AndroidPackageUtils.getModuleTemplates;
 
-/**
- * A wizard step for generating Android vector drawable icons.
- */
+
 public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIconsModel> implements PersistentStateComponent<PersistentState> {
   private static final String DEFAULT_OUTPUT_NAME = "vector_name";
-  // Start with the Clip Art radio button selected, because the clip art icons are easy to browse
-  // and play around with right away.
-  //private static final AssetSourceType DEFAULT_ASSET_SOURCE_TYPE = AssetSourceType.CLIP_ART;
-  @SuppressWarnings("UseJBColor") // Intentionally not using JBColor for Android icons.
-  private static final Color DEFAULT_COLOR = Color.BLACK;
+
 
   private static final String VECTOR_ASSET_STEP_PROPERTY = "vectorAssetStep";
   private static final String OUTPUT_NAME_PROPERTY = "outputName";
-  private static final String ASSET_SOURCE_TYPE_PROPERTY = "assetSourceType";
-  private static final String CLIPART_ASSET_PROPERTY = "clipartAsset";
-  private static final String COLOR_PROPERTY = "color";
   private static final String OPACITY_PERCENT_PROPERTY = "opacityPercent";
   private static final String AUTO_MIRRORED_PROPERTY = "autoMirrored";
 
@@ -149,7 +140,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   private JPanel myRightPanel;
 
   public SvgFromClipboardAssetStep(@NotNull GenerateIconsModel model, @NotNull AndroidFacet facet , File svgFile) {
-    super(model, "Configure Vector Asset");
+    super(model, "Import Svg from Clipboard");
     myFacet = facet;
     this.svgFile = svgFile;
     int minSdkVersion = StudioAndroidModuleInfo.getInstance(myFacet).getMinSdkVersion().getApiLevel();
@@ -334,6 +325,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
     myGeneralBindings.releaseAll();
     myActiveAssetBindings.releaseAll();
     myListeners.releaseAll();
+    svgFile.deleteOnExit();
   }
 
   @Override
