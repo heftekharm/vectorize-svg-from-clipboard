@@ -10,20 +10,18 @@ import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.module.Module
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.PsiElement
-import com.intellij.psi.impl.file.PsiDirectoryImpl
 import com.intellij.util.ui.JBUI
 import org.jetbrains.android.facet.AndroidFacet
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.io.File
-import java.net.URL
 
 
 class ImportFromClipboardAction : AnAction() {
-    private lateinit var virtualFileRes: VirtualFile
+    //private lateinit var virtualFileRes: VirtualFile
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
@@ -31,10 +29,7 @@ class ImportFromClipboardAction : AnAction() {
             .systemClipboard.getData(DataFlavor.stringFlavor) as? String
         val svgPattern = Regex("<svg.*?>.*?</svg>", RegexOption.DOT_MATCHES_ALL)
         val matchedSvg = clipboardData?.let { svgPattern.find(it) } ?: run {
-            NotificationGroupManager.getInstance()
-                .getNotificationGroup("com.hfm.importfromclipboard.notification")
-                .createNotification("There is no valid svg in the clipboard", NotificationType.INFORMATION)
-                .notify(project)
+            showNotification(project, "There is no valid svg in the clipboard")
             return
         }
 
@@ -50,8 +45,7 @@ class ImportFromClipboardAction : AnAction() {
 
         val location = CommonDataKeys.VIRTUAL_FILE.getData(dataContext) ?: return
 
-
-        val facet = AndroidFacet.getInstance(virtualFileRes, project) ?: return
+        val facet = AndroidFacet.getInstance(location, project) ?: return
 
         val template = getModuleTemplate(module, location) ?: return
 
@@ -75,20 +69,37 @@ class ImportFromClipboardAction : AnAction() {
     }
 
     override fun update(anActionEvent: AnActionEvent) {
-        val project = anActionEvent.project
-        val psiElement: PsiElement? = anActionEvent.dataContext.getData(PlatformDataKeys.PSI_ELEMENT)
-        val isValid = project != null && psiElement != null &&
-                (psiElement as? PsiDirectoryImpl)?.isDirectory == true &&
-                (psiElement as? PsiDirectoryImpl)?.name == "res"
-        anActionEvent.presentation.isEnabledAndVisible = isValid
-        if (isValid) {
-            virtualFileRes = (psiElement as PsiDirectoryImpl).virtualFile
-        }
+
+        //val startTime = System.currentTimeMillis()
+
+        val dataContext: DataContext = anActionEvent.dataContext
+
+        val module = PlatformCoreDataKeys.MODULE.getData(dataContext) ?: return
+
+        val location = CommonDataKeys.VIRTUAL_FILE.getData(dataContext) ?: return
+
+        val paths = module.getModuleSystem().getModuleTemplates(location).firstOrNull { it.name == "main" }?.paths
+
+        val locationPath = location.presentableUrl
+        val isVisible = paths?.moduleRoot?.path == locationPath || paths?.resDirectories?.map { it.path }?.contains(locationPath) == true
+
+        anActionEvent.presentation.isEnabledAndVisible = isVisible
+
+/*                val psiElement: PsiElement? = anActionEvent.dataContext.getData(PlatformDataKeys.PSI_ELEMENT)
+                val isValid = anActionEvent.project != null && psiElement != null &&
+                        (psiElement as? PsiDirectoryImpl)?.isDirectory == true &&
+                        (psiElement as? PsiDirectoryImpl)?.name == "res"
+                anActionEvent.presentation.isEnabledAndVisible = isValid*/
+
+
+        //val endTime = System.currentTimeMillis()
+
+        //showNotification(anActionEvent.project!! , "time is:" + (endTime - startTime) )
     }
 
     private fun getModuleTemplate(module: Module, location: VirtualFile): NamedModuleTemplate? {
         for (namedTemplate in module.getModuleSystem().getModuleTemplates(location)) {
-            if (!namedTemplate.paths.resDirectories.isEmpty()) {
+            if (namedTemplate.paths.resDirectories.isNotEmpty()) {
                 return namedTemplate
             }
         }
@@ -107,5 +118,13 @@ class ImportFromClipboardAction : AnAction() {
             }
         }
         return bestMatch
+    }
+
+
+    private fun showNotification(project: Project, message: String){
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("com.hfm.importfromclipboard.notification")
+            .createNotification(message, NotificationType.INFORMATION)
+            .notify(project)
     }
 }

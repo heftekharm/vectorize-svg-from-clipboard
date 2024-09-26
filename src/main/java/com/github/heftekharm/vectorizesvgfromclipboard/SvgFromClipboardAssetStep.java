@@ -60,7 +60,6 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -167,7 +166,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
 
 
 
-    myFileBrowserPanel.setVisible(true);
+    myFileBrowserPanel.setVisible(false);
     myFileBrowser.getAsset().path().setValue(svgFile);
 
     myActiveAsset.set(myFileBrowser.getAsset());
