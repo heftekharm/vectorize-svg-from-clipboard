@@ -38,11 +38,7 @@ class ImportFromClipboardAction : AnAction() {
             return
         }
 
-
-        val resPath = File(virtualFileRes.path)
-        //val dialog = ImportDialogWrapper()
-        //val result = dialog.showAndGet()
-        val tempInputFile = File.createTempFile("in_temp_svg", System.currentTimeMillis().toString()).apply {
+        val tempInputFile = File.createTempFile("temp_svg_from_clipboard", ".svg").apply {
             writeText(matchedSvg.value)
         }
 
@@ -59,15 +55,14 @@ class ImportFromClipboardAction : AnAction() {
 
         val template = getModuleTemplate(module, location) ?: return
 
-        //val asset = SVGImporter().processFile(tempInputFile)
-
         val resFolder = findClosestResFolder(template.paths, location) ?: return
 
         val wizard: ModelWizard = ModelWizard.Builder()
             .addStep(
                 SvgFromClipboardAssetStep(
                     GenerateIconsModel(facet, "vectorWizard", template, resFolder),
-                    facet
+                    facet,
+                    tempInputFile
                 )
             ).build()
 

@@ -15,9 +15,6 @@
  */
  package com.github.heftekharm.vectorizesvgfromclipboard;
 
-import static com.android.tools.idea.npw.assetstudio.AssetStudioUtils.roundToInt;
-import static com.android.tools.idea.npw.project.AndroidPackageUtils.getModuleTemplates;
-
 import com.android.annotations.concurrency.UiThread;
 import com.android.annotations.concurrency.WorkerThread;
 import com.android.ide.common.resources.FileResourceNameValidator;
@@ -29,7 +26,6 @@ import com.android.tools.idea.model.StudioAndroidModuleInfo;
 import com.android.tools.idea.npw.assetstudio.VectorIconGenerator;
 import com.android.tools.idea.npw.assetstudio.assets.VectorAsset;
 import com.android.tools.idea.npw.assetstudio.ui.VectorAssetBrowser;
-import com.android.tools.idea.npw.assetstudio.ui.VectorIconButton;
 import com.android.tools.idea.npw.assetstudio.ui.VectorImageComponent;
 import com.android.tools.idea.npw.assetstudio.wizard.ConfirmGenerateIconsStep;
 import com.android.tools.idea.npw.assetstudio.wizard.GenerateIconsModel;
@@ -40,26 +36,11 @@ import com.android.tools.idea.observable.ListenerManager;
 import com.android.tools.idea.observable.ObservableValue;
 import com.android.tools.idea.observable.Receiver;
 import com.android.tools.idea.observable.adapters.StringToDoubleAdapterProperty;
-import com.android.tools.idea.observable.core.BoolProperty;
-import com.android.tools.idea.observable.core.BoolValueProperty;
-import com.android.tools.idea.observable.core.DoubleProperty;
-import com.android.tools.idea.observable.core.DoubleValueProperty;
-import com.android.tools.idea.observable.core.IntProperty;
-import com.android.tools.idea.observable.core.ObjectProperty;
-import com.android.tools.idea.observable.core.ObjectValueProperty;
-import com.android.tools.idea.observable.core.ObservableBool;
-import com.android.tools.idea.observable.core.OptionalValueProperty;
-import com.android.tools.idea.observable.core.StringProperty;
+import com.android.tools.idea.observable.core.*;
 import com.android.tools.idea.observable.expressions.Expression;
 import com.android.tools.idea.observable.expressions.optional.AsOptionalExpression;
 import com.android.tools.idea.observable.expressions.string.FormatExpression;
-import com.android.tools.idea.observable.ui.ColorProperty;
-import com.android.tools.idea.observable.ui.EnabledProperty;
-import com.android.tools.idea.observable.ui.HasFocusProperty;
-import com.android.tools.idea.observable.ui.SelectedProperty;
-import com.android.tools.idea.observable.ui.SelectedRadioButtonProperty;
-import com.android.tools.idea.observable.ui.SliderValueProperty;
-import com.android.tools.idea.observable.ui.TextProperty;
+import com.android.tools.idea.observable.ui.*;
 import com.android.tools.idea.res.IdeResourceNameValidator;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.intellij.openapi.application.ApplicationManager;
@@ -68,13 +49,18 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.ui.ColorPanel;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.concurrency.SwingWorker;
 import com.intellij.util.concurrency.ThreadingAssertions;
 import com.intellij.util.ui.JBUI;
-import java.awt.Color;
+import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.SystemIndependent;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -83,17 +69,9 @@ import java.text.ParsePosition;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
-import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import org.jetbrains.android.facet.AndroidFacet;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.SystemIndependent;
+
+import static com.android.tools.idea.npw.assetstudio.AssetStudioUtils.roundToInt;
+import static com.android.tools.idea.npw.project.AndroidPackageUtils.getModuleTemplates;
 
 /**
  * A wizard step for generating Android vector drawable icons.
@@ -102,7 +80,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   private static final String DEFAULT_OUTPUT_NAME = "vector_name";
   // Start with the Clip Art radio button selected, because the clip art icons are easy to browse
   // and play around with right away.
-  private static final AssetSourceType DEFAULT_ASSET_SOURCE_TYPE = AssetSourceType.CLIP_ART;
+  //private static final AssetSourceType DEFAULT_ASSET_SOURCE_TYPE = AssetSourceType.CLIP_ART;
   @SuppressWarnings("UseJBColor") // Intentionally not using JBColor for Android icons.
   private static final Color DEFAULT_COLOR = Color.BLACK;
 
@@ -110,19 +88,18 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   private static final String OUTPUT_NAME_PROPERTY = "outputName";
   private static final String ASSET_SOURCE_TYPE_PROPERTY = "assetSourceType";
   private static final String CLIPART_ASSET_PROPERTY = "clipartAsset";
-  private static final String SOURCE_FILE_PROPERTY = "sourceFile";
   private static final String COLOR_PROPERTY = "color";
   private static final String OPACITY_PERCENT_PROPERTY = "opacityPercent";
   private static final String AUTO_MIRRORED_PROPERTY = "autoMirrored";
 
-  private final ObjectProperty<AssetSourceType> myAssetSourceType;
+
   private final ObjectProperty<VectorAsset> myActiveAsset;
   private final StringProperty myOutputName;
   private final ObservableBool myWidthHasFocus;
   private final ObservableBool myHeightHasFocus;
   private final DoubleProperty myWidth = new DoubleValueProperty();
   private final DoubleProperty myHeight = new DoubleValueProperty();
-  private final ColorProperty myColor;
+
   private final IntProperty myOpacityPercent;
   private final BoolProperty myAutoMirrored;
 
@@ -134,6 +111,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   private final BindingsManager myActiveAssetBindings = new BindingsManager();
   private final ListenerManager myListeners = new ListenerManager();
 
+  private final File svgFile;
   @NotNull private final VectorIconGenerator myIconGenerator;
   @NotNull private final AndroidFacet myFacet;
 
@@ -149,23 +127,15 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   @SuppressWarnings("unused") // Defined to make things clearer in UI designer.
   private JPanel myResourceNamePanel;
   private JTextField myOutputNameTextField;
-  @SuppressWarnings("unused") // Defined to make things clearer in UI designer.
-  private JPanel mySourceAssetTypePanel;
-  @SuppressWarnings("unused") // Defined to make things clearer in UI designer.
-  private JPanel mySourceAssetRadioButtons;
-  private JRadioButton myClipartRadioButton;
-  private JRadioButton myLocalFileRadioButton;
-  @SuppressWarnings("unused") // Defined to make things clearer in UI designer.
-  private JPanel myIconPickerPanel;
-  private VectorIconButton myClipartAssetButton;
+
+    //private VectorIconButton myClipartAssetButton;
   private JPanel myFileBrowserPanel;
   private VectorAssetBrowser myFileBrowser;
   @SuppressWarnings("unused") // Defined to make things clearer in UI designer.
   private JPanel myResizePanel;
   private JTextField myWidthTextField;
   private JTextField myHeightTextField;
-  private JPanel myColorRowPanel;
-  private ColorPanel myColorPanel;
+
   @SuppressWarnings("unused") // Defined to make things clearer in UI designer.
   private JPanel myOpacityPanel;
   private JSlider myOpacitySlider;
@@ -178,40 +148,38 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   @SuppressWarnings("unused") // Defined to make things clearer in UI designer.
   private JPanel myRightPanel;
 
-  public SvgFromClipboardAssetStep(@NotNull GenerateIconsModel model, @NotNull AndroidFacet facet) {
+  public SvgFromClipboardAssetStep(@NotNull GenerateIconsModel model, @NotNull AndroidFacet facet , File svgFile) {
     super(model, "Configure Vector Asset");
     myFacet = facet;
-
+    this.svgFile = svgFile;
     int minSdkVersion = StudioAndroidModuleInfo.getInstance(myFacet).getMinSdkVersion().getApiLevel();
     myIconGenerator = new VectorIconGenerator(myFacet.getModule().getProject(), minSdkVersion);
     Disposer.register(this, myIconGenerator);
 
     myImagePreviewPanel.setBorder(JBUI.Borders.customLine(JBColor.border()));
 
-    myAssetSourceType = new SelectedRadioButtonProperty<>(DEFAULT_ASSET_SOURCE_TYPE, AssetSourceType.values(),
-                                                          myClipartRadioButton, myLocalFileRadioButton);
-    myActiveAsset = new ObjectValueProperty<>(myClipartAssetButton.getAsset());
+
+    myActiveAsset = new ObjectValueProperty<>(myFileBrowser.getAsset());
     myOutputName = new TextProperty(myOutputNameTextField);
     myOutputName.set(DEFAULT_OUTPUT_NAME);
     myWidthHasFocus = new HasFocusProperty(myWidthTextField);
     myHeightHasFocus = new HasFocusProperty(myHeightTextField);
-    myColor = new ColorProperty(myColorPanel);
+
     myOpacityPercent = new SliderValueProperty(myOpacitySlider);
     myAutoMirrored = new SelectedProperty(myEnableAutoMirroredCheckBox);
 
     myValidatorPanel = new ValidatorPanel(this, myPanel, "Conversion Issues", "Encountered Issues:");
 
     ActionListener assetListener = actionEvent -> renderPreviews();
-    myClipartAssetButton.addAssetListener(assetListener);
-    myClipartAssetButton.setToolTipText("Select Clip Art");
+
     myFileBrowser.addAssetListener(assetListener);
 
-    myListeners.listenAndFire(myAssetSourceType, sourceType -> {
-      myIconPickerPanel.setVisible(sourceType == AssetSourceType.CLIP_ART);
-      myColorRowPanel.setVisible(sourceType == AssetSourceType.CLIP_ART);
-      myFileBrowserPanel.setVisible(sourceType == AssetSourceType.FILE);
-      myActiveAsset.set(sourceType == AssetSourceType.CLIP_ART ? myClipartAssetButton.getAsset() : myFileBrowser.getAsset());
-    });
+
+
+    myFileBrowserPanel.setVisible(true);
+    myFileBrowser.getAsset().path().setValue(svgFile);
+
+    myActiveAsset.set(myFileBrowser.getAsset());
 
     myListeners.listenAll(myWidthHasFocus, myHeightHasFocus).with(() -> {
       myGeneralBindings.release(myWidth);
@@ -296,9 +264,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
           Expression.create(() -> heightEnabled.get() ? heightText.get() : "24", heightText, heightEnabled);
       myValidatorPanel.registerValidator(heightForValidation, new SizeValidator("Height has to be a positive number"));
 
-      if (myAssetSourceType.get() == AssetSourceType.CLIP_ART) {
-        myActiveAssetBindings.bind(activeAsset.color(), myColor);
-      }
+
       myActiveAssetBindings.bind(activeAsset.opacityPercent(), myOpacityPercent);
       myActiveAssetBindings.bind(activeAsset.autoMirrored(), myAutoMirrored);
       myActiveAssetBindings.bind(activeAsset.outputWidth(), Expression.create(myWidth::get, myWidth));
@@ -375,11 +341,6 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   public PersistentState getState() {
     PersistentState state = new PersistentState();
     state.set(OUTPUT_NAME_PROPERTY, myOutputName.get(), DEFAULT_OUTPUT_NAME);
-    state.set(ASSET_SOURCE_TYPE_PROPERTY, myAssetSourceType.get(), DEFAULT_ASSET_SOURCE_TYPE);
-    state.setChild(CLIPART_ASSET_PROPERTY, myClipartAssetButton.getState());
-    File file = myFileBrowser.getAsset().path().getValueOrNull();
-    state.set(SOURCE_FILE_PROPERTY, file == null ? getProjectPath() : file.getPath(), getProjectPath());
-    state.set(COLOR_PROPERTY, myColor.getValueOrNull(), DEFAULT_COLOR);
     state.set(OPACITY_PERCENT_PROPERTY, myOpacityPercent.get(), 100);
     state.set(AUTO_MIRRORED_PROPERTY, myAutoMirrored.get(), false);
     return state;
@@ -394,11 +355,6 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
         if (name != null) {
           myOutputName.set(name);
         }
-        myAssetSourceType.set(state.get(ASSET_SOURCE_TYPE_PROPERTY, DEFAULT_ASSET_SOURCE_TYPE));
-        PersistentStateUtil.load(myClipartAssetButton, state.getChild(CLIPART_ASSET_PROPERTY));
-        String path = state.get(SOURCE_FILE_PROPERTY, getProjectPath());
-        myFileBrowser.getAsset().path().setValue(new File(path));
-        myColor.setValue(state.get(COLOR_PROPERTY, DEFAULT_COLOR));
         myOpacityPercent.set(state.get(OPACITY_PERCENT_PROPERTY, 100));
         myAutoMirrored.set(state.get(AUTO_MIRRORED_PROPERTY, false));
       },
@@ -541,10 +497,5 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
       Number number = myFormat.parse(value, pos);
       return number != null && pos.getIndex() == value.length() && number.doubleValue() > 0 ? Result.OK : myInvalidResult;
     }
-  }
-
-  private enum AssetSourceType {
-    CLIP_ART,
-    FILE,
   }
 }
