@@ -1,6 +1,6 @@
 # Import SVG from Clipboard
 
-![Plugin Version](https://img.shields.io/badge/version-0.0.1-blue) ![Android Studio](https://img.shields.io/badge/Android%20Studio-plugin-green)
+![Plugin Version](https://img.shields.io/badge/version-1.0.0-blue) ![Android Studio](https://img.shields.io/badge/Android%20Studio-plugin-green)
 
 ## Overview
 
