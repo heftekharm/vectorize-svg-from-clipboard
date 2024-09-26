@@ -21,7 +21,11 @@ import java.io.File
 
 
 class ImportFromClipboardAction : AnAction() {
-    //private lateinit var virtualFileRes: VirtualFile
+
+    override fun getActionUpdateThread(): ActionUpdateThread {
+        return ActionUpdateThread.BGT
+    }
+
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
