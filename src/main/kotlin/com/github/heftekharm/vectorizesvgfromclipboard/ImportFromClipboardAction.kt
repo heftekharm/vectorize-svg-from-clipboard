@@ -69,7 +69,7 @@ class ImportFromClipboardAction : AnAction() {
             .setMinimumSize(JBUI.size(700, 540))
             .setPreferredSize(JBUI.size(700, 540))
         dialogBuilder.build().show()
-
+        tempInputFile.delete()
     }
 
     override fun update(anActionEvent: AnActionEvent) {
@@ -85,19 +85,14 @@ class ImportFromClipboardAction : AnAction() {
         val paths = module.getModuleSystem().getModuleTemplates(location).firstOrNull { it.name == "main" }?.paths
 
         val locationPath = location.presentableUrl
-        val isVisible = paths?.moduleRoot?.path == locationPath || paths?.resDirectories?.map { it.path }?.contains(locationPath) == true
 
+        val isVisible = paths?.moduleRoot?.path == locationPath || paths?.resDirectories?.any {
+            val path = it.path
+            locationPath == path || locationPath.startsWith("$path${File.separator}drawable")
+        } == true
         anActionEvent.presentation.isEnabledAndVisible = isVisible
 
-/*                val psiElement: PsiElement? = anActionEvent.dataContext.getData(PlatformDataKeys.PSI_ELEMENT)
-                val isValid = anActionEvent.project != null && psiElement != null &&
-                        (psiElement as? PsiDirectoryImpl)?.isDirectory == true &&
-                        (psiElement as? PsiDirectoryImpl)?.name == "res"
-                anActionEvent.presentation.isEnabledAndVisible = isValid*/
-
-
         //val endTime = System.currentTimeMillis()
-
         //showNotification(anActionEvent.project!! , "time is:" + (endTime - startTime) )
     }
 

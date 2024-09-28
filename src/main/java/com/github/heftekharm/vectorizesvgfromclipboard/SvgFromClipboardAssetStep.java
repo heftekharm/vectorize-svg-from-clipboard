@@ -324,7 +324,6 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
     myGeneralBindings.releaseAll();
     myActiveAssetBindings.releaseAll();
     myListeners.releaseAll();
-    svgFile.deleteOnExit();
   }
 
   @Override
