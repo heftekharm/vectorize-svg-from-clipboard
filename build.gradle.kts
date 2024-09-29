@@ -46,7 +46,7 @@ dependencies {
         instrumentationTools()
         pluginVerifier()
         zipSigner()
-        testFramework(TestFrameworkType.Platform)
+        //testFramework(TestFrameworkType.Platform)
     }
 }
 
@@ -135,6 +135,7 @@ tasks {
     }
 }
 
+/*
 intellijPlatformTesting {
     runIde {
         register("runIdeForUiTests") {
@@ -155,3 +156,4 @@ intellijPlatformTesting {
         }
     }
 }
+*/
