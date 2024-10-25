@@ -67,7 +67,7 @@ class ImportFromClipboardAction : AnAction() {
         val dialogBuilder = StudioWizardDialogBuilder(wizard, "Svg From Clipboard")
         dialogBuilder.setProject(facet.getModule().getProject())
             .setMinimumSize(JBUI.size(700, 540))
-            .setPreferredSize(JBUI.size(700, 540))
+            .setPreferredSize(JBUI.size(800, 540))
         dialogBuilder.build().show()
         tempInputFile.delete()
     }
