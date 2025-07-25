@@ -8,9 +8,11 @@ intelliJPlatform = "2.6.0"
 kotlin = "2.1.0"
 kover = "0.8.3"
 qodana = "2024.1.9"
+svgToCompose = "0.11.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+svgToCompose = { group = "com.github.DevSrSouza", name = "svg-to-compose", version.ref = "svgToCompose" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }

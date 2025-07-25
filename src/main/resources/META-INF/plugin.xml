@@ -14,8 +14,13 @@
         <notificationGroup id="com.hfm.importfromclipboard.notification" displayType="BALLOON" key="notification_group"/>
     </extensions>
     <actions>
-        <action id="com.hfm.importfromclipboard" class="com.github.heftekharm.vectorizesvgfromclipboard.ImportFromClipboardAction" text="Import Svg From Clipboard"
-                description="Imports svg from clipboard converting to android vector">
+        <action id="com.hfm.importfromclipboard.drawable" class="com.github.heftekharm.vectorizesvgfromclipboard.ImportFromClipboardAsVectorDrawableAction" text="Import Svg From Clipboard As VectorDrawable"
+                description="Imports svg from clipboard converting to VectorDrawable">
+            <add-to-group group-id="ProjectViewPopupMenu"  anchor="last"/>
+        </action>
+
+        <action id="com.hfm.importfromclipboard.imagevector" class="com.github.heftekharm.vectorizesvgfromclipboard.ImportSvgFromClipboardAsImageVectorAction" text="Import Svg From Clipboard As ImageVector"
+            description="Imports svg from clipboard converting to ImageVector">
             <add-to-group group-id="ProjectViewPopupMenu"  anchor="last"/>
         </action>
     </actions>
