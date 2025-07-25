@@ -21,7 +21,6 @@ import com.android.ide.common.resources.FileResourceNameValidator;
 import com.android.ide.common.vectordrawable.VdOverrideInfo;
 import com.android.resources.ResourceFolderType;
 import com.android.tools.adtui.validation.Validator;
-import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.model.StudioAndroidModuleInfo;
 import com.android.tools.idea.npw.assetstudio.VectorIconGenerator;
 import com.android.tools.idea.npw.assetstudio.assets.VectorAsset;
@@ -158,7 +157,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
     myOpacityPercent = new SliderValueProperty(myOpacitySlider);
     myAutoMirrored = new SelectedProperty(myEnableAutoMirroredCheckBox);
 
-    myValidatorPanel = new ValidatorPanel(this, myPanel, "Conversion Issues", "Encountered Issues:");
+    myValidatorPanel = new ValidatorPanel(this, myPanel,true, "Conversion Issues", "Encountered Issues:");
 
     ActionListener assetListener = actionEvent -> renderPreviews();
 
