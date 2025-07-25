@@ -1,16 +1,23 @@
 package com.github.heftekharm.vectorizesvgfromclipboard
 
-import com.android.tools.idea.npw.assetstudio.wizard.GenerateIconsModel
+import com.android.tools.idea.model.StudioAndroidModuleInfo
 import com.android.tools.idea.projectsystem.AndroidModulePaths
 import com.android.tools.idea.projectsystem.NamedModuleTemplate
 import com.android.tools.idea.projectsystem.getModuleSystem
+import com.android.tools.idea.util.toIoFile
 import com.android.tools.idea.wizard.model.ModelWizard
 import com.android.tools.idea.wizard.ui.StudioWizardDialogBuilder
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.actionSystem.PlatformCoreDataKeys
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.rootManager
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.util.ui.JBUI
@@ -29,43 +36,64 @@ class ImportFromClipboardAction : AnAction() {
 
     override fun actionPerformed(anActionEvent: AnActionEvent) {
         val project = anActionEvent.project ?: return
-        val clipboardData = Toolkit.getDefaultToolkit()
-            .systemClipboard.getData(DataFlavor.stringFlavor) as? String
         val svgPattern = Regex("<svg.*?>.*?</svg>", RegexOption.DOT_MATCHES_ALL)
-        val matchedSvg = clipboardData?.let { svgPattern.find(it) } ?: run {
+        val matchedSvg = kotlin.runCatching {
+            Toolkit.getDefaultToolkit()
+                .systemClipboard?.run {
+                    (getData(DataFlavor.stringFlavor) as? String)?.let { svgPattern.find(it) }
+                        ?: (getContents(null).getTransferData(DataFlavor.javaFileListFlavor) as? List<File>)?.first()?.readText()
+                            ?.let { svgPattern.find(it) }
+                }?.value
+        }.getOrNull() ?: run {
             showNotification(project, "There is no valid svg in the clipboard")
             return
         }
 
         val tempInputFile = File.createTempFile("temp_svg_from_clipboard_file_", ".svg").apply {
-            writeText(matchedSvg.value)
+            writeText(matchedSvg)
         }
 
         val dataContext: DataContext = anActionEvent.dataContext
-
-        val view = LangDataKeys.IDE_VIEW.getData(dataContext) ?: return
 
         val module = PlatformCoreDataKeys.MODULE.getData(dataContext) ?: return
 
         val location = CommonDataKeys.VIRTUAL_FILE.getData(dataContext) ?: return
 
-        val facet = AndroidFacet.getInstance(location, project) ?: return
+        val facet = AndroidFacet.getInstance(location, project)
 
-        val template = getModuleTemplate(module, location) ?: return
+        var template = getModuleTemplate(module, location)
 
-        val resFolder = findClosestResFolder(template.paths, location) ?: return
+        var resFolder = template?.paths?.let { findClosestResFolder(it, location) }
+
+        val isAndroidModule = template != null
+
+        if (isAndroidModule.not()) {
+            val kmpResFolder = module.rootManager.contentRoots.firstOrNull { it.isDirectory && it.name == module.name.split(".").last() }?.findChild("composeResources") ?.toIoFile()
+            template = NamedModuleTemplate(
+                "fake", FakeModulePaths(kmpResFolder!!)
+            )
+            resFolder = kmpResFolder
+        }
+
+        if (resFolder == null) {
+            showNotification(project, "Could not find Resource folder")
+            return
+        }
+
+        val minSdk = facet?.let {   StudioAndroidModuleInfo.getInstance(it).minSdkVersion.apiLevel} ?: 0
 
         val wizard: ModelWizard = ModelWizard.Builder()
             .addStep(
                 SvgFromClipboardAssetStep(
-                    GenerateIconsModel(facet, "vectorWizard", template, resFolder),
-                    facet,
+                    CustomGenerateIconsModel(project, "vectorWizard", template!!, resFolder),
+                    project,
+                    minSdk,
                     tempInputFile
                 )
             ).build()
 
         val dialogBuilder = StudioWizardDialogBuilder(wizard, "Svg From Clipboard")
-        dialogBuilder.setProject(facet.getModule().getProject())
+        dialogBuilder.setProject(project)
             .setMinimumSize(JBUI.size(700, 540))
             .setPreferredSize(JBUI.size(800, 540))
         dialogBuilder.build().show()
@@ -73,27 +101,12 @@ class ImportFromClipboardAction : AnAction() {
     }
 
     override fun update(anActionEvent: AnActionEvent) {
-
-        //val startTime = System.currentTimeMillis()
-
         val dataContext: DataContext = anActionEvent.dataContext
-
-        val module = PlatformCoreDataKeys.MODULE.getData(dataContext) ?: return
-
         val location = CommonDataKeys.VIRTUAL_FILE.getData(dataContext) ?: return
-
-        val paths = module.getModuleSystem().getModuleTemplates(location).firstOrNull { it.name == "main" }?.paths
-
-        val locationPath = location.presentableUrl
-
-        val isVisible = paths?.moduleRoot?.path == locationPath || paths?.resDirectories?.any {
-            val path = it.path
-            locationPath == path || locationPath.startsWith("$path${File.separator}drawable")
-        } == true
+        val isVisible = location.takeIf { it.isDirectory }?.name?.let {
+            it.startsWith("drawable") ||  it in arrayOf("res" , "composeResources" , "commonMain" , "app")
+        } ?: false
         anActionEvent.presentation.isEnabledAndVisible = isVisible
-
-        //val endTime = System.currentTimeMillis()
-        //showNotification(anActionEvent.project!! , "time is:" + (endTime - startTime) )
     }
 
     private fun getModuleTemplate(module: Module, location: VirtualFile): NamedModuleTemplate? {

@@ -46,6 +46,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.JBColor;
@@ -72,7 +73,7 @@ import static com.android.tools.idea.npw.assetstudio.AssetStudioUtils.roundToInt
 import static com.android.tools.idea.npw.project.AndroidPackageUtils.getModuleTemplates;
 
 
-public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIconsModel> implements PersistentStateComponent<PersistentState> {
+public final class SvgFromClipboardAssetStep extends ModelWizardStep<CustomGenerateIconsModel> implements PersistentStateComponent<PersistentState> {
   private static final String DEFAULT_OUTPUT_NAME = "vector_name";
 
 
@@ -102,7 +103,6 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
 
   private final File svgFile;
   @NotNull private final VectorIconGenerator myIconGenerator;
-  @NotNull private final AndroidFacet myFacet;
 
   private final ValidatorPanel myValidatorPanel;
 
@@ -137,12 +137,16 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   @SuppressWarnings("unused") // Defined to make things clearer in UI designer.
   private JPanel myRightPanel;
 
-  public SvgFromClipboardAssetStep(@NotNull GenerateIconsModel model, @NotNull AndroidFacet facet , File svgFile) {
+  private Project project;
+
+  public SvgFromClipboardAssetStep(@NotNull CustomGenerateIconsModel model,
+                                   @NotNull  Project project,
+                                   int minSdkVersion,
+                                   File svgFile) {
     super(model, "Import Svg from Clipboard");
-    myFacet = facet;
     this.svgFile = svgFile;
-    int minSdkVersion = StudioAndroidModuleInfo.getInstance(myFacet).getMinSdkVersion().getApiLevel();
-    myIconGenerator = new VectorIconGenerator(myFacet.getModule().getProject(), minSdkVersion);
+    this.project = project;
+    myIconGenerator = new VectorIconGenerator(project, minSdkVersion);
     Disposer.register(this, myIconGenerator);
 
     myImagePreviewPanel.setBorder(JBUI.Borders.customLine(JBColor.border()));
@@ -292,7 +296,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   @Override
   @NotNull
   protected Collection<? extends ModelWizardStep<?>> createDependentSteps() {
-    return Collections.singletonList(new ConfirmGenerateIconsStep(getModel(), getModuleTemplates(myFacet, null)));
+    return Collections.emptyList();
   }
 
   @Override
@@ -323,6 +327,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
     myGeneralBindings.releaseAll();
     myActiveAssetBindings.releaseAll();
     myListeners.releaseAll();
+    svgFile.delete();
   }
 
   @Override
@@ -353,7 +358,7 @@ public final class SvgFromClipboardAssetStep extends ModelWizardStep<GenerateIco
   @SystemIndependent
   @NotNull
   private String getProjectPath() {
-    String projectPath = myFacet.getModule().getProject().getBasePath();
+    String projectPath = project.getBasePath();
     assert projectPath != null;
     return projectPath;
   }
