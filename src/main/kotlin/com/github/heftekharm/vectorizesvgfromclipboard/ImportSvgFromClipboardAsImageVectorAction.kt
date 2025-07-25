@@ -10,6 +10,8 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.actionSystem.DataContext
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.io.FileUtil
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
@@ -32,33 +34,34 @@ class ImportSvgFromClipboardAsImageVectorAction : AnAction() {
         val location = CommonDataKeys.VIRTUAL_FILE.getData(dataContext) ?: return
         val initialFileName = "Icon${System.currentTimeMillis()}"
         val dialog = ImportImageVectorDialog(initialFileName)
-        if(dialog.showAndGet()){
+        if (dialog.showAndGet()) {
             generate(
-                svgContent =  matchedSvg ,
-                location = location ,
-                fileName = dialog.getFileName() ,
-                accessorName = dialog.getAccessorName()
-                )
+                svgContent = matchedSvg,
+                location = location,
+                fileName = dialog.getFileName(),
+                accessorName = dialog.getAccessorName(),
+                project = project
+            )
         }
 
 
     }
 
 
-    private fun generate(svgContent: String, location: VirtualFile, fileName: String, accessorName: String) {
+    private fun generate(svgContent: String, location: VirtualFile, fileName: String, accessorName: String , project: Project) {
         val directoryPackage = getPackageOfFolder(location)
 
-        val tempInputFolder = File(FileUtil.getTempDirectory() , "inivectors")
+        val tempInputFolder = File(FileUtil.getTempDirectory(), "inivectors")
         if (!tempInputFolder.exists()) {
             FileUtil.createDirectory(tempInputFolder)
         }
         FileUtils.cleanOutputDir(tempInputFolder)
 
-        val tempInputFile = FileUtil.createTempFile(tempInputFolder, fileName, ".svg").apply {
+        FileUtil.createTempFile(tempInputFolder, fileName, ".svg").apply {
             writeText(svgContent)
         }
 
-        val tempOutputFolder = File(FileUtil.getTempDirectory() , "outivectors")
+        val tempOutputFolder = File(FileUtil.getTempDirectory(), "outivectors")
 
         if (!tempOutputFolder.exists()) {
             FileUtil.createDirectory(tempOutputFolder)
@@ -72,10 +75,20 @@ class ImportSvgFromClipboardAsImageVectorAction : AnAction() {
             vectorsDirectory = tempInputFolder,
         )
 
-        val generatedContentFolder = tempOutputFolder.resolve(directoryPackage.replace(".", File.separator))
 
-        FileUtil.copyDirContent(generatedContentFolder, location.toIoFile())
-        location.refresh(true, true)
+        val regex = Regex("""\.?${ImportImageVectorDialog.DEFAULT_ACCESSOR_NAME}\.?""", RegexOption.IGNORE_CASE)
+
+        val targetFile = tempOutputFolder.walkTopDown().find { it.nameWithoutExtension.lowercase() == fileName.lowercase() }
+        val newContent = targetFile?.readText()?.replace("""import $directoryPackage.${ImportImageVectorDialog.DEFAULT_ACCESSOR_NAME}""", "", true)
+            ?.replace(regex, "")
+        newContent?.let { newContent ->
+            ApplicationManager.getApplication().runWriteAction {
+                runCatching {
+                    val newFile = location.createChildData(null, "$fileName.kt")
+                    newFile.setBinaryContent(newContent.toByteArray())
+                }
+            }
+        }?: Utils.showNotification(project , "Something went wrong!")
     }
 
     override fun update(anActionEvent: AnActionEvent) {

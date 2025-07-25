@@ -8,13 +8,13 @@ import javax.swing.JComponent
 import javax.swing.JTextField
 
 
-class ImportImageVectorDialog(private val initialFileName:String) : DialogWrapper(true) {
+class ImportImageVectorDialog(private val initialFileName: String) : DialogWrapper(true) {
 
     private val properties = PropertiesComponent.getInstance()
-    private val previousAccessor = properties.getValue("myplugin.lastAccessor", "Icons")
+    //private val previousAccessor = properties.getValue("myplugin.lastAccessor", "Icons")
 
-    private lateinit var fileNameField:JTextField
-    private lateinit var accessorNameField:JTextField
+    private lateinit var fileNameField: JTextField
+    //private lateinit var accessorNameField: JTextField
 
     init {
         title = "Import Svg As ImageVector"
@@ -29,12 +29,12 @@ class ImportImageVectorDialog(private val initialFileName:String) : DialogWrappe
                     fileNameField.text = initialFileName
                 }
             }
-            row("Accessor Name:") {
+            /*row("Accessor Name:") {
                 textField().let {
                     accessorNameField = it.component
                     accessorNameField.text = previousAccessor
                 }
-            }
+            }*/
         }
     }
 
@@ -42,18 +42,23 @@ class ImportImageVectorDialog(private val initialFileName:String) : DialogWrappe
         if (fileNameField.text.trim().isEmpty()) {
             return ValidationInfo("File name cannot be empty", fileNameField)
         }
-        if (accessorNameField.text.trim().isEmpty()) {
+        /*if (accessorNameField.text.trim().isEmpty()) {
             return ValidationInfo("Accessor name cannot be empty", accessorNameField)
-        }
+        }*/
         return null
     }
 
     override fun doOKAction() {
-        properties.setValue("myplugin.lastAccessor", accessorNameField.text.trim())
+        //properties.setValue("myplugin.lastAccessor", accessorNameField.text.trim())
         super.doOKAction()
         dispose()
     }
 
     fun getFileName(): String = fileNameField.text.trim()
-    fun getAccessorName(): String = accessorNameField.text.trim()
+    fun getAccessorName(): String = "MyDefaultVectorImagesAccessor" //accessorNameField.text.trim()
+
+
+    companion object {
+        const val DEFAULT_ACCESSOR_NAME = "MyDefaultVectorImagesAccessor"
+    }
 }
