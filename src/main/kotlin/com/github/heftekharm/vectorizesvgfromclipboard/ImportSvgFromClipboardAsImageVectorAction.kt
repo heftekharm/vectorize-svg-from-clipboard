@@ -95,7 +95,7 @@ class ImportSvgFromClipboardAsImageVectorAction : AnAction() {
         val dataContext: DataContext = anActionEvent.dataContext
         val location = CommonDataKeys.VIRTUAL_FILE.getData(dataContext) ?: return
 
-        val isVisible = location.takeIf { it.isDirectory }?.toIoFile().toPathStringOrNull()?.segments?.contains("res")?.not() ?: false
+        val isVisible = location.takeIf { it.isDirectory }?.toIoFile().toPathStringOrNull()?.segments?.run { contains("res") || contains("composeResources") }?.not() ?: false
         anActionEvent.presentation.isEnabledAndVisible = isVisible
     }
 
