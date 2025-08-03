@@ -18,14 +18,14 @@ object Utils {
 
     fun getSvgContentFromClipboard(): String? {
         val svgPattern = Regex("<svg.*?>.*?</svg>", RegexOption.DOT_MATCHES_ALL)
-        return kotlin.runCatching {
-            Toolkit.getDefaultToolkit()
-                .systemClipboard?.run {
-                    (getData(DataFlavor.stringFlavor) as? String)?.let { svgPattern.find(it) }
-                        ?: (getContents(null).getTransferData(DataFlavor.javaFileListFlavor) as? List<File>)?.first()?.readText()
-                            ?.let { svgPattern.find(it) }
-                }?.value
-        }.getOrNull()
+
+        val systemClipboard=Toolkit.getDefaultToolkit().systemClipboard
+        val matchedSvgContent = runCatching {(systemClipboard.getData(DataFlavor.stringFlavor) as? String)?.let { svgPattern.find(it) }}.getOrNull() ?:
+        runCatching {(systemClipboard.getContents(null).getTransferData(DataFlavor.javaFileListFlavor) as? List<File>)?.first()?.readText()
+            ?.let { svgPattern.find(it) }}.getOrNull()
+
+        return matchedSvgContent?.value
     }
+
 
 }
