@@ -2,13 +2,17 @@
 
 ## [Unreleased]
 
+## [1.1.1] - 2025-08-03
+
+### Fixed
+
+- Fixed plugin class loader exception.
+- Fixed issues with copying and importing SVG files.
+
 ## [1.1.0] - 2025-07-25
 
 ### Added
 
-- Support for Compose Multiplatform.
-- Ability to import SVG as `ImageVector`.
-- Support for copying SVG files.
-
-[Unreleased]: https://github.com/heftekharm/vectorize-svg-from-clipboard/compare/v1.1.0...HEAD
-[1.1.0]: https://github.com/heftekharm/vectorize-svg-from-clipboard/commits/v1.1.0
+- Added support for Compose Multiplatform.
+- Enabled importing SVG content as `ImageVector`.
+- Added functionality to copy and import SVG files directly.
