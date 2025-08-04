@@ -43,8 +43,10 @@ dependencies {
     intellijPlatform {
         //create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
         androidStudio("2025.1.1.14")
+        bundledPlugin("org.jetbrains.android")
+
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
-        plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
+        //plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
 
         instrumentationTools()
         pluginVerifier()
