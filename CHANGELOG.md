@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+## [1.1.4] - 2025-08-15
+
+### Fixed
+
+- Removed unnecessary dependencies to reduce the size
+
+
 ## [1.1.1] - 2025-08-03
 
 ### Fixed
