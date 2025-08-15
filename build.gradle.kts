@@ -1,6 +1,5 @@
 import org.jetbrains.changelog.Changelog
 import org.jetbrains.changelog.markdownToHTML
-import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 
 plugins {
     id("java") // Java support
@@ -37,6 +36,9 @@ dependencies {
     testImplementation(libs.junit)
     implementation(libs.svgToCompose){
         exclude("com.android.tools")
+        exclude(group = "com.google.guava")
+        exclude(group = "org.jetbrains.kotlin")
+        exclude(group = "junit")
     }
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
@@ -48,7 +50,6 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(providers.gradleProperty("platformPlugins").map { it.split(',') })
 
-        instrumentationTools()
         pluginVerifier()
         zipSigner()
         //testFramework(TestFrameworkType.Platform)
