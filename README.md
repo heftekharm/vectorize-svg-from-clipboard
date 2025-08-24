@@ -26,3 +26,5 @@ It is especially useful for importing SVGs directly from design tools like Figma
 ## License
 
 This plugin is licensed under the [MIT License](LICENSE).
+
+<a href="https://www.buymeacoffee.com/h.eftekhar.m" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
